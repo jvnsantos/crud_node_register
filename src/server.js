@@ -10,7 +10,7 @@ database();
 
 app.use(express.json());
 
-app.use("/api/users", routes);
+app.use("/api", routes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Running on Port ${process.env.PORT}`);

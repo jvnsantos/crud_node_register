@@ -1,9 +1,18 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const sanitizeString = require("../utils/sanitizeString");
 
 const userSchema = mongoose.Schema(
   {
-    name: {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    userName: {
       type: String,
       required: true,
     },
@@ -24,6 +33,7 @@ const userSchema = mongoose.Schema(
 );
 
 userSchema.pre("save", async function (next) {
+  // Encriptação da senha
   if (!this.isModified("password")) {
     next();
   }
