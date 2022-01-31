@@ -18,7 +18,8 @@ module.exports = {
 
       res.status(201).json(user);
     } catch (e) {
-      res.status(400).json(error);
+      res.status(400).json("Erro ao cadastrar novo usuário", e);
+      process.exit(1);
     }
   },
 };
