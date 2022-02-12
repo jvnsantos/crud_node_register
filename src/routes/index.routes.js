@@ -1,28 +1,23 @@
 const express = require("express");
-const cors = require("cors")
+const cors = require("cors");
 const UserController = require("../controllers/UserController");
 
 const userController = new UserController();
 
 const router = express.Router();
 
-const whitelist = ["*", "http://localhost:3000"];
+router.post("/register", async (req, res) => {
+  try {
+    const user = await userController.createUser(req, res);
+    return user;
+  } catch (error) {
+    console.log("Erro no método POST___", error);
+  }
+});
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-};
+router.get("/user", userController.readUser);
 
-router.route("/users/new").post(userController.createUser, cors(corsOptions));
-router.route("/users/search").get(userController.readUser, cors(corsOptions));
-router.route("/users/all").get(userController.readAllUser, cors(corsOptions));
-router
-  .route("/users/delete")
-  .delete(userController.deleteUser, cors(corsOptions));
+router.route("/users/all").get(userController.readAllUser);
+router.route("/users/delete").delete(userController.deleteUser);
 
-module.exports = router;
+module.exports = (app) => app.use("/api", router);

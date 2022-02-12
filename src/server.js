@@ -6,10 +6,11 @@ const cors = require("cors");
 
 const app = express();
 
+app.use(cors());
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", true);
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-  app.use(cors());
   next();
 });
 
@@ -18,7 +19,8 @@ database();
 
 app.use(express.json());
 
-app.use("/api", routes);
+require("./routes/index.routes")(app);
+// app.use("/api", routes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Running on Port ${process.env.PORT}`);

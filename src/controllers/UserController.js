@@ -2,6 +2,7 @@ const User = require("../models/User");
 const sanitizeString = require("../utils/sanitizeString");
 
 class UserController {
+  
   async readAllUser(req, res) {
     try {
       const user = await User.find();
