@@ -4,6 +4,10 @@ const sanitizeString = require("../utils/sanitizeString");
 
 const userSchema = mongoose.Schema(
   {
+    id: {
+      type: Number,
+      autoIncrement: true,
+    },
     firstName: {
       type: String,
       required: true,

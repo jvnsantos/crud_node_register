@@ -1,14 +1,36 @@
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 const sanitizeString = require("../utils/sanitizeString");
 
 class UserController {
-  
   async readAllUser(req, res) {
     try {
       const user = await User.find();
       res.status(200).json(user);
     } catch (e) {
       res.status(404).json({ message: "Nenhum resultado encontrado." });
+    }
+  }
+
+  async authUser(req, res) {
+    const { email, password } = req.body;
+
+    const thisUser = await User.findOne({ email });
+
+    if (!thisUser) {
+      return res.status(500).send("E-mail não cadastrado");
+    }
+
+    try {
+      if (await bcrypt.compare(password, thisUser.password)) {
+        res.status(200).send({ message: "Login autenticado" });
+      } else {
+        res.status(400).send({ message: "Senha inválida" });
+      }
+    } catch (error) {
+      res
+        .status(500)
+        .send({ message: "Erro na tentativa de login", error: error });
     }
   }
 
@@ -65,7 +87,9 @@ class UserController {
         .status(201)
         .json({ message: `Usuário criado com sucesso`, data: user });
     } catch (e) {
-      return res.status(400).json({ message: "erro ao salvar no banco de dados", e });
+      return res
+        .status(400)
+        .json({ message: "erro ao salvar no banco de dados", e });
     }
   }
 

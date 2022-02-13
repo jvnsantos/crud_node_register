@@ -17,6 +17,8 @@ router.post("/register", async (req, res) => {
 
 router.get("/user", userController.readUser);
 
+router.post("/auth", userController.authUser)
+
 router.route("/users/all").get(userController.readAllUser);
 router.route("/users/delete").delete(userController.deleteUser);
 
