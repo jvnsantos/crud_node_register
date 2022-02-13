@@ -1,14 +1,16 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const sanitizeString = require("../utils/sanitizeString");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
 
 class UserController {
   async readAllUser(req, res) {
     try {
       const user = await User.find();
-      res.status(200).json(user);
+      res.status(200).json({ usuario: user });
     } catch (e) {
-      res.status(404).json({ message: "Nenhum resultado encontrado." });
+      res.status(404).json({ message: "Nenhum resultado encontrado." }).end();
     }
   }
 
@@ -18,19 +20,28 @@ class UserController {
     const thisUser = await User.findOne({ email });
 
     if (!thisUser) {
-      return res.status(500).send("E-mail não cadastrado");
+      return res.status(404).send("E-mail não cadastrado");
     }
 
     try {
       if (await bcrypt.compare(password, thisUser.password)) {
-        res.status(200).send({ message: "Login autenticado" });
+        const token = jwt.sign(
+          { userName: thisUser.userName },
+          process.env.SECRET_KEY,
+          {
+            expiresIn: 300,
+          }
+        );
+        // res.status(200).send({ message: "Login autenticado" });
+        return res.json({ auth: true, token });
       } else {
-        res.status(400).send({ message: "Senha inválida" });
+        // res.status(401).send({ message: "Senha inválida" });
+        res.status(401).send({ error: "Senha inválida" }).end();
       }
     } catch (error) {
       res
         .status(500)
-        .send({ message: "Erro na tentativa de login", error: error });
+        .send({ message: "Erro na tentativa de login", erro: error });
     }
   }
 
@@ -111,6 +122,16 @@ class UserController {
         error: error,
       });
     }
+  }
+
+  verifyJWT(req, res, next) {
+    const token = req.headers["x-access-token"];
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+      if (err) return res.status(401).send("Token inválido").end();
+
+      req.userName = decoded.userName;
+      next();
+    });
   }
 }
 

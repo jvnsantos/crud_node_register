@@ -17,9 +17,10 @@ router.post("/register", async (req, res) => {
 
 router.get("/user", userController.readUser);
 
-router.post("/auth", userController.authUser)
+router.post("/auth", userController.authUser);
 
-router.route("/users/all").get(userController.readAllUser);
+router.get("/users/all", userController.verifyJWT, userController.readAllUser);
+
 router.route("/users/delete").delete(userController.deleteUser);
 
 module.exports = (app) => app.use("/api", router);
