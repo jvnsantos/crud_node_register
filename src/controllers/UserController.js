@@ -20,6 +20,7 @@ class UserController {
     const thisUser = await User.findOne({ email });
 
     if (!thisUser) {
+      console.log("E-mail não cadastrado")
       return res.status(404).send("E-mail não cadastrado");
     }
 
@@ -33,9 +34,11 @@ class UserController {
           }
         );
         // res.status(200).send({ message: "Login autenticado" });
+        console.log("Usuario autenticado com o token: ",token)
         return res.json({ auth: true, token });
       } else {
         // res.status(401).send({ message: "Senha inválida" });
+        console.log("Senha invalida")
         res.status(401).send({ error: "Senha inválida" }).end();
       }
     } catch (error) {
