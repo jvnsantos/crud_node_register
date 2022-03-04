@@ -1,8 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const sanitizeString = require("../utils/sanitizeString");
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
+require("dotenv");
 
 class UserController {
   async readAllUser(req, res) {
@@ -20,25 +19,16 @@ class UserController {
     const thisUser = await User.findOne({ email });
 
     if (!thisUser) {
-      console.log("E-mail não cadastrado")
       return res.status(404).send("E-mail não cadastrado");
     }
 
     try {
       if (await bcrypt.compare(password, thisUser.password)) {
-        const token = jwt.sign(
-          { userName: thisUser.userName },
-          process.env.SECRET_KEY,
-          {
-            expiresIn: 300,
-          }
-        );
-        // res.status(200).send({ message: "Login autenticado" });
-        console.log("Usuario autenticado com o token: ",token)
-        return res.json({ auth: true, token });
+        const token = jwt.sign({ user: thisUser }, process.env.SECRET_KEY, {
+          expiresIn: 300,
+        });
+        return res.json({ user: thisUser, auth: true, token });
       } else {
-        // res.status(401).send({ message: "Senha inválida" });
-        console.log("Senha invalida")
         res.status(401).send({ error: "Senha inválida" }).end();
       }
     } catch (error) {
@@ -68,6 +58,17 @@ class UserController {
     } else {
       res.status(404).json({ message: `Usuário não cadastrado` });
     }
+  }
+
+  async disconnectUser(req, res) {
+    const { email } = req.body;
+    const thisUser = await User.findOne({ email });
+
+    const token = jwt.sign({ email: email }, process.env.SECRET_KEY, {
+      expiresIn: 1,
+    });
+
+    return res.json({ user: thisUser, auth: true, token });
   }
 
   async createUser(req, res) {
@@ -127,14 +128,19 @@ class UserController {
     }
   }
 
-  verifyJWT(req, res, next) {
-    const token = req.headers["x-access-token"];
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      if (err) return res.status(401).send("Token inválido").end();
+  async verifyJWT(req, res) {
+    const { token } = await req.body;
 
-      req.userName = decoded.userName;
-      next();
-    });
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        return res.status(200).send(decoded);
+      } catch (error) {
+        return res.status(401).send("Token inválido").end();
+      }
+    }
+
+    return null;
   }
 }
 
